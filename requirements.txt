@@ -1,23 +1,14 @@
-# Core scientific libraries
 pandas
 numpy
 matplotlib
 seaborn
 plotly
-
-# Text processing
 regex
 emoji
 nltk
 scikit-learn
-
-# Visualization
 wordcloud
-
-# Model saving/loading
 joblib
-
-# Web app
 streamlit
 
 

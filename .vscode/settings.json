@@ -1,0 +1,11 @@
+{
+    "chat.checkpoints.showFileChanges": true,
+    "chat.mcp.gallery.enabled": false,
+    "inlineChat.notebookAgent": true,
+    "telemetry.editStats.showStatusBar": true,
+    "telemetry.editStats.showDecorations": false,
+    "codesnap.showWindowTitle": false,
+    "github.copilot.chat.alternateGptPrompt.enabled": true,
+    "gradle.allowParallelRun": false,
+    "notebook.consolidatedRunButton": false
+}

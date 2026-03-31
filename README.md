@@ -8,15 +8,6 @@ This platform uses a combination of **Natural Language Processing (NLP)**, **heu
 
 ## Dataset
 
-This project utilizes the **[UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection)** dataset (or similarly formatted data) to train its machine learning model. You can also find it on [Kaggle](https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset).
-- **Location:** The training file should be located at `data/spam.csv`.
-- **Format:** The training script (`src/train_model.py`) expects a tab-separated (`\t`) structure, consisting of two columns: `label` (`ham` or `spam`) and `message`.
-- **Preprocessing:** The training pipeline applies preprocessing such as lowercasing, stop-word removal, and character reduction mapping prior to text vectorization via TF-IDF.
-
----
-
-## Dataset
-
 This project utilizes the **[UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection)** dataset to train its machine learning model. You can also find it on [Kaggle](https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset).
 - **Location:** The training file should be located at `data/spam.csv`.
 - **Format:** The training script (`src/train_model.py`) expects a tab-separated (`\t`) structure, consisting of two columns: `label` (`ham` or `spam`) and `message`.
@@ -38,6 +29,35 @@ This project utilizes the **[UCI SMS Spam Collection](https://archive.ics.uci.ed
   - Emoji usage tracking!
 - **Data Exporting**: Download detailed analytical reports and prediction logs (CSV format) directly from the browser.
 - **Interactive UI**: Fully responsive Plotly charts with a robust Dark/Light mode theme toggle.
+
+---
+
+## 🧠 Model and Approach
+
+The prediction pipeline utilizes a two-step funnel:
+1. **Rule-Based Engine:** Looks for highly indicative spam terminology combining URLs, typical bait words (like 'promo', 'reward', 'crypto', etc.).
+2. **Probabilistic Engine:** A **Multinomial Naive Bayes** algorithm trained on English SMS spam databanks. Text is parsed into numerical arrays using **TF-IDF** (Term Frequency-Inverse Document Frequency) which identifies the importance of words contextualized against the background spam dataset.
+
+---
+
+## 📊 Model Performance
+
+- Accuracy: 96%
+- Spam Precision: 100%
+- Spam Recall: ~73%
+- False Positives: 0
+
+The model achieves high accuracy with zero false positives, ensuring reliable spam detection while minimizing incorrect classifications.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** [Streamlit](https://streamlit.io/)
+- **Data Manipulation:** [Pandas](https://pandas.pydata.org/), NumPy
+- **Machine Learning:** [Scikit-Learn](https://scikit-learn.org/) (MultinomialNB, TfidfVectorizer)
+- **Data Visualization:** [Plotly](https://plotly.com/python/), Matplotlib, WordCloud
+- **NLP / Text Processing:** Regex, NLTK, Emoji
 
 ---
 
@@ -93,16 +113,6 @@ To use the tool, you need to provide a `.txt` file of your chat.
 
 ---
 
-## 🛠️ Tech Stack
-
-- **Frontend:** [Streamlit](https://streamlit.io/)
-- **Data Manipulation:** [Pandas](https://pandas.pydata.org/), NumPy
-- **Machine Learning:** [Scikit-Learn](https://scikit-learn.org/) (MultinomialNB, TfidfVectorizer)
-- **Data Visualization:** [Plotly](https://plotly.com/python/), Matplotlib, WordCloud
-- **NLP / Text Processing:** Regex, NLTK, Emoji
-
----
-
 ## 📂 Project Structure
 
 ```text
@@ -128,12 +138,4 @@ Whatsapp-spam-detector/
     ├── predict.py             # Logic bridging the ML predictions and app
     └── train_model.py         # Script to ingest data and train the classifier
 ```
-
----
-
-## 🧠 Under the Hood (The Model)
-
-The prediction pipeline utilizes a two-step funnel:
-1. **Rule-Based Engine:** Looks for highly indicative spam terminology combining URLs, typical bait words (like 'promo', 'reward', 'crypto', etc.).
-2. **Probabilistic Engine:** A **Multinomial Naive Bayes** algorithm trained on English SMS spam databanks. Text is parsed into numerical arrays using **TF-IDF** (Term Frequency-Inverse Document Frequency) which identifies the importance of words contextualized against the background spam dataset.
 

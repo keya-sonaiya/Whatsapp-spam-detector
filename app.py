@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -33,7 +36,7 @@ model, vectorizer = load_model()
 # -------------------------------
 st.set_page_config(
     page_title="WhatsApp Spam Detector",
-    page_icon="🛡️",
+    page_icon=":shield:",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -55,35 +58,47 @@ def get_theme_css(mode: str = "dark", font_size: str = "medium") -> str:
     multiplier = size_map.get(font_size.lower(), 1.0)
 
     if mode == "light":
-        bg_primary = "#f9fafb"
-        bg_secondary = "#ffffff"
-        bg_tertiary = "#e5e7eb"
-        text_primary = "#111827"
-        text_secondary = "#374151"
-        text_muted = "#6b7280"
-        border_color = "#d1d5db"
-        accent_color = "#4f46e5"
+        bg_primary = "#f6f7f9"
+        bg_secondary = "#eef2f5"
+        bg_tertiary = "#e6ebef"
+        text_primary = "#171a1c"
+        text_secondary = "#3f474c"
+        text_muted = "#66737a"
+        border_color = "#d7dee4"
+        accent_color = "#0f9f6e"
         success_color = "#16a34a"
-        danger_color = "#dc2626"
+        danger_color = "#e11d48"
         card_bg = "#ffffff"
-        sidebar_bg = "linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%)"
-        input_bg = "#f9fafb"
-        input_text = "#111827"
+        sidebar_bg = "#f0f3f6"
+        input_bg = "#ffffff"
+        input_text = "#171a1c"
+        shadow_color = "rgba(16, 24, 40, 0.08)"
+        success_bg = "#dff8e9"
+        success_text = "#14532d"
+        file_chip_bg = "#ffffff"
+        table_stripe = "#f8fafb"
+        table_header = "#eef2f5"
     else:
-        bg_primary = "#0f172a"
-        bg_secondary = "#020617"
-        bg_tertiary = "#111827"
-        text_primary = "#f1f5f9"
-        text_secondary = "#cbd5e1"
-        text_muted = "#94a3b8"
-        border_color = "#475569"
-        accent_color = "#6366f1"
-        success_color = "#10b981"
-        danger_color = "#ef4444"
-        card_bg = "#020617"
-        sidebar_bg = "linear-gradient(180deg, #020617 0%, #020617 100%)"
-        input_bg = "#020617"
-        input_text = "#f1f5f9"
+        bg_primary = "#101112"
+        bg_secondary = "#141717"
+        bg_tertiary = "#1e2424"
+        text_primary = "#f5f7f8"
+        text_secondary = "#d2d8d8"
+        text_muted = "#94a0a0"
+        border_color = "#2d3735"
+        accent_color = "#2dd4bf"
+        success_color = "#22c55e"
+        danger_color = "#fb7185"
+        card_bg = "#171a1c"
+        sidebar_bg = "#111614"
+        input_bg = "#151819"
+        input_text = "#f5f7f8"
+        shadow_color = "rgba(0, 0, 0, 0.24)"
+        success_bg = "rgba(34, 197, 94, 0.14)"
+        success_text = "#bbf7d0"
+        file_chip_bg = "#202526"
+        table_stripe = "#151819"
+        table_header = "#1e2424"
 
     base_font = 16 * multiplier
     small_font = 14 * multiplier
@@ -113,6 +128,12 @@ def get_theme_css(mode: str = "dark", font_size: str = "medium") -> str:
             --card-bg: {card_bg};
             --input-bg: {input_bg};
             --input-text: {input_text};
+            --shadow-color: {shadow_color};
+            --success-bg: {success_bg};
+            --success-text: {success_text};
+            --file-chip-bg: {file_chip_bg};
+            --table-stripe: {table_stripe};
+            --table-header: {table_header};
         }}
 
         body, [data-testid="stMarkdownContainer"], .stMarkdown, .stText, label {{
@@ -411,6 +432,274 @@ def get_theme_css(mode: str = "dark", font_size: str = "medium") -> str:
             margin: 1.5rem 0 !important;
         }}
 
+        html, body, .stApp {{
+            background: var(--bg-primary) !important;
+        }}
+
+        [data-testid="stAppViewContainer"] {{
+            background:
+                linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)
+                !important;
+        }}
+
+        [data-testid="stAppViewContainer"] .block-container {{
+            max-width: 1180px !important;
+            padding-top: 2.25rem !important;
+            padding-bottom: 3rem !important;
+        }}
+
+        [data-testid="stSidebar"] {{
+            border-right: 1px solid var(--border-color) !important;
+        }}
+
+        [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"] {{
+            border: 1px dashed var(--accent-color) !important;
+            border-radius: 8px !important;
+            padding: 1.35rem !important;
+            transition: border-color 0.2s ease, background-color 0.2s ease !important;
+        }}
+
+        [data-testid="stSidebar"] [data-testid="stFileUploaderDropzone"]:hover {{
+            background: var(--bg-tertiary) !important;
+            border-color: var(--success-color) !important;
+        }}
+
+        .stSidebar button, [data-testid="stFileUploaderDropzone"] button,
+        .stDownloadButton button, .stButton button {{
+            background: var(--accent-color) !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }}
+
+        .stSidebar button:hover, .stDownloadButton button:hover, .stButton button:hover {{
+            filter: brightness(1.06) !important;
+            transform: none !important;
+        }}
+
+        .hero-shell {{
+            padding: 0.25rem 0 1.35rem !important;
+            margin-bottom: 1.5rem !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }}
+
+        .eyebrow {{
+            color: var(--accent-color) !important;
+            font-size: {small_font}px !important;
+            font-weight: 700 !important;
+            margin-bottom: 0.45rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0 !important;
+        }}
+
+        .main-title {{
+            font-size: {title_font}px !important;
+            font-weight: 750 !important;
+            text-align: left !important;
+            line-height: 1.08 !important;
+            margin-bottom: 0.45rem !important;
+        }}
+
+        .subtitle {{
+            color: var(--text-secondary) !important;
+            text-align: left !important;
+            max-width: 740px !important;
+            margin-bottom: 0.75rem !important;
+            line-height: 1.55 !important;
+        }}
+
+        .hero-meta {{
+            color: var(--text-muted) !important;
+            font-size: {small_font}px !important;
+            line-height: 1.5 !important;
+        }}
+
+        .section-header {{
+            font-weight: 700 !important;
+            margin-top: 1.6rem !important;
+            gap: 0.6rem !important;
+        }}
+
+        .section-header::before {{
+            content: "";
+            width: 4px;
+            height: 1.25em;
+            border-radius: 4px;
+            background: var(--accent-color);
+            display: inline-block;
+        }}
+
+        .metric-card {{
+            border-radius: 8px !important;
+            padding: 1.35rem 1.1rem !important;
+            min-height: 132px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18) !important;
+        }}
+
+        .metric-card:hover {{
+            transform: translateY(-2px) !important;
+        }}
+
+        .metric-label {{
+            letter-spacing: 0 !important;
+        }}
+
+        .sidebar-help-card,
+        .welcome-card,
+        .custom-alert,
+        [data-testid="stMetric"],
+        [data-testid="stDataFrame"],
+        [data-testid="stPlotlyChart"],
+        [data-testid="stImage"] {{
+            border-radius: 8px !important;
+        }}
+
+        .welcome-card {{
+            padding: 2rem !important;
+            text-align: left !important;
+            margin: 1.75rem 0 !important;
+            max-width: 720px !important;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.18) !important;
+        }}
+
+        .welcome-kicker {{
+            color: var(--accent-color) !important;
+            font-size: {small_font}px !important;
+            font-weight: 700 !important;
+            margin-bottom: 0.5rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0 !important;
+        }}
+
+        .welcome-title {{
+            color: var(--text-primary) !important;
+            font-size: {section_font}px !important;
+            font-weight: 700 !important;
+            margin-bottom: 0.5rem !important;
+        }}
+
+        [data-testid="stDataFrame"],
+        [data-testid="stPlotlyChart"],
+        [data-testid="stImage"],
+        [data-testid="stMetric"] {{
+            border: 1px solid var(--border-color) !important;
+            background: var(--card-bg) !important;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16) !important;
+        }}
+
+        [data-testid="stPlotlyChart"],
+        [data-testid="stImage"] {{
+            padding: 0.75rem !important;
+        }}
+
+        [data-testid="stHeader"],
+        [data-testid="stToolbar"],
+        [data-testid="stDecoration"],
+        header {{
+            background: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }}
+
+        [data-testid="stSidebarContent"] {{
+            background: var(--bg-secondary) !important;
+        }}
+
+        [data-testid="stFileUploader"] {{
+            color: var(--text-primary) !important;
+        }}
+
+        [data-testid="stFileUploaderDropzone"] {{
+            background: var(--card-bg) !important;
+            border-color: var(--accent-color) !important;
+        }}
+
+        [data-testid="stFileUploaderDropzone"] small,
+        [data-testid="stFileUploaderDropzone"] span,
+        [data-testid="stFileUploaderDropzone"] p {{
+            color: var(--text-secondary) !important;
+        }}
+
+        [data-testid="stFileUploaderFile"],
+        [data-testid="stFileUploaderFile"] section,
+        [data-testid="stFileUploaderFile"] div {{
+            background: var(--file-chip-bg) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }}
+
+        [data-testid="stFileUploaderFileName"],
+        [data-testid="stFileUploaderFileSize"] {{
+            color: var(--text-primary) !important;
+        }}
+
+        [data-testid="stFileUploader"] button {{
+            background: var(--accent-color) !important;
+            color: #ffffff !important;
+            border: 1px solid var(--accent-color) !important;
+        }}
+
+        [data-testid="stSuccess"],
+        .stSuccess {{
+            background: var(--success-bg) !important;
+            color: var(--success-text) !important;
+            border: 1px solid rgba(34, 197, 94, 0.2) !important;
+            border-radius: 8px !important;
+        }}
+
+        [data-testid="stSuccess"] *,
+        .stSuccess * {{
+            color: var(--success-text) !important;
+        }}
+
+        [data-testid="stDataFrame"] {{
+            overflow: hidden !important;
+        }}
+
+        [data-testid="stDataFrame"] div,
+        [data-testid="stDataFrame"] span,
+        [data-testid="stDataFrame"] button {{
+            color: var(--text-primary) !important;
+        }}
+
+        [data-baseweb="radio"] div,
+        [data-baseweb="checkbox"] div {{
+            color: var(--text-primary) !important;
+        }}
+
+        [data-baseweb="radio"] [role="radio"] {{
+            border-color: var(--accent-color) !important;
+        }}
+
+        .section-separator {{
+            margin: 1.3rem 0 !important;
+        }}
+
+        .footer {{
+            margin-top: 2.5rem !important;
+            padding: 1.5rem 0 !important;
+        }}
+
+        @media (max-width: 720px) {{
+            [data-testid="stAppViewContainer"] .block-container {{
+                padding-top: 1.2rem !important;
+            }}
+
+            .main-title {{
+                font-size: {title_font * 0.78}px !important;
+            }}
+
+            .subtitle {{
+                font-size: {subtitle_font * 0.92}px !important;
+            }}
+
+            .metric-card {{
+                min-height: 112px !important;
+            }}
+        }}
+
     </style>
     """
 
@@ -420,19 +709,26 @@ def get_plotly_theme(mode: str = "dark"):
     """Return common layout colors for Plotly charts."""
     mode = mode.lower()
     if mode == "light":
-        font_color = "#111827"
-        grid_color = "rgba(107,114,128,0.3)"
-        axis_color = "#9ca3af"
+        font_color = "#171a1c"
+        grid_color = "rgba(102,115,122,0.22)"
+        axis_color = "#a8b2b8"
     else:
-        font_color = "#f1f5f9"
-        grid_color = "rgba(148,163,184,0.3)"
-        axis_color = "#64748b"
+        font_color = "#f5f7f8"
+        grid_color = "rgba(148,160,160,0.22)"
+        axis_color = "#53605e"
 
     base_layout = dict(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color=font_color, family="Inter, sans-serif", size=14),
-        title=dict(font=dict(color=font_color, size=18)),
+        font=dict(color=font_color, family="Inter, sans-serif", size=13),
+        title=dict(font=dict(color=font_color, size=17)),
+        margin=dict(l=36, r=22, t=54, b=38),
+        colorway=["#2dd4bf", "#22c55e", "#fb7185", "#f59e0b", "#38bdf8"],
+        hoverlabel=dict(
+            bgcolor="rgba(23,26,28,0.96)",
+            bordercolor="rgba(255,255,255,0.12)",
+            font=dict(color="#ffffff", family="Inter, sans-serif"),
+        ),
         xaxis=dict(
             linecolor=axis_color,
             gridcolor=grid_color,
@@ -452,9 +748,85 @@ def get_plotly_theme(mode: str = "dark"):
     return base_layout, font_color
 
 
+def style_table(df: pd.DataFrame, mode: str, prediction_col: str | None = None):
+    """Return a pandas Styler that matches the selected app theme."""
+    mode = mode.lower()
+    if mode == "light":
+        colors = {
+            "bg": "#ffffff",
+            "header": "#eef2f5",
+            "text": "#171a1c",
+            "muted": "#3f474c",
+            "border": "#d7dee4",
+            "spam_bg": "#ffe4e6",
+            "spam_text": "#be123c",
+            "ham_bg": "#dcfce7",
+            "ham_text": "#166534",
+        }
+    else:
+        colors = {
+            "bg": "#171a1c",
+            "header": "#1e2424",
+            "text": "#f5f7f8",
+            "muted": "#d2d8d8",
+            "border": "#2d3735",
+            "spam_bg": "#3a1820",
+            "spam_text": "#fecdd3",
+            "ham_bg": "#123323",
+            "ham_text": "#bbf7d0",
+        }
+
+    styler = (
+        df.style.set_table_styles(
+            [
+                {
+                    "selector": "thead th",
+                    "props": [
+                        ("background-color", colors["header"]),
+                        ("color", colors["muted"]),
+                        ("border-color", colors["border"]),
+                        ("font-weight", "600"),
+                    ],
+                },
+                {
+                    "selector": "tbody td",
+                    "props": [
+                        ("background-color", colors["bg"]),
+                        ("color", colors["text"]),
+                        ("border-color", colors["border"]),
+                    ],
+                },
+            ]
+        )
+        .set_properties(
+            **{
+                "background-color": colors["bg"],
+                "color": colors["text"],
+                "border-color": colors["border"],
+            }
+        )
+    )
+
+    if prediction_col and prediction_col in df.columns:
+        def color_prediction(value):
+            if value == "Spam":
+                return (
+                    f"background-color: {colors['spam_bg']}; "
+                    f"color: {colors['spam_text']}; font-weight: 700;"
+                )
+            return (
+                f"background-color: {colors['ham_bg']}; "
+                f"color: {colors['ham_text']}; font-weight: 700;"
+            )
+
+        styler = styler.map(color_prediction, subset=[prediction_col])
+
+    return styler
+
+
 # SIDEBAR (theme + upload)
 with st.sidebar:
-    theme_mode = st.radio("🎨 Theme", ("Dark", "Light"), index=0, horizontal=True)
+    theme_mode = st.radio("Theme", ("Dark", "Light"), index=0, horizontal=True)
     font_size = "Medium"  # Fixed font size
 
 # apply CSS AFTER we know theme and font size
@@ -463,10 +835,10 @@ st.markdown(get_theme_css(theme_mode, font_size), unsafe_allow_html=True)
 plot_layout, plot_font_color = get_plotly_theme(theme_mode)
 
 with st.sidebar:
-    st.markdown("<div class='sidebar-title'>🛡️ Setup</div>", unsafe_allow_html=True)
+    st.markdown("<div class='sidebar-title'>Setup</div>", unsafe_allow_html=True)
 
     # Checkbox to show/hide instructions (no expander = no dark header bug)
-    show_help = st.checkbox("📖 Export Instructions", value=False, key="export_help")
+    show_help = st.checkbox("Export instructions", value=False, key="export_help")
 
     if show_help:
         st.markdown(
@@ -490,7 +862,7 @@ with st.sidebar:
         )
 
     st.markdown("---")
-    st.markdown("### 📂 Upload Chat")
+    st.markdown("### Upload chat")
     uploaded_file = st.file_uploader(
         "Choose WhatsApp .txt file",
         type=["txt"],
@@ -501,7 +873,7 @@ with st.sidebar:
         uploaded_file.seek(0)
         file_size_mb = len(uploaded_file.read()) / (1024 * 1024)
         uploaded_file.seek(0)
-        st.success(f"✅ {uploaded_file.name}")
+        st.success(f"Loaded {uploaded_file.name}")
         st.caption(f"Size: {file_size_mb:.2f} MB")
 
 
@@ -509,11 +881,16 @@ with st.sidebar:
 # MAIN TITLE
 # -------------------------------
 st.markdown(
-    "<div class='main-title'>🛡️ WhatsApp Spam Detector</div>",
-    unsafe_allow_html=True,
-)
-st.markdown(
-    "<div class='subtitle'>AI-powered spam detection for WhatsApp chats</div>",
+    """
+    <div class="hero-shell">
+        <div class="eyebrow">Message risk dashboard</div>
+        <div class="main-title">WhatsApp Spam Detector</div>
+        <div class="subtitle">
+            Upload a chat export to classify risky messages and review conversation patterns.
+        </div>
+        <div class="hero-meta">Spam scan | sender activity | message trends | CSV exports</div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -524,12 +901,10 @@ if uploaded_file is None:
     st.markdown(
         """
     <div class="welcome-card">
-        <div class="welcome-icon">📱</div>
+        <div class="welcome-kicker">No chat selected</div>
+        <div class="welcome-title">Upload a WhatsApp .txt export</div>
         <div class="welcome-text">
-            Upload your WhatsApp chat export to analyze messages and detect spam using advanced AI algorithms.
-        </div>
-        <div class="upload-hint">
-            👈 Use the sidebar to get started
+            Use the sidebar upload control to begin the scan.
         </div>
     </div>
     """,
@@ -537,16 +912,18 @@ if uploaded_file is None:
     )
 
 else:
-    # Save temp file
-    file_path = "temp_chat.txt"
-    with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    temp_file_path = None
 
     try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:
+            temp_file.write(uploaded_file.getbuffer())
+            temp_file_path = temp_file.name
+        file_path = temp_file_path
+
         # -------------------------------
         # LOAD + CLEAN CHAT
         # -------------------------------
-        with st.spinner("🔄 Processing chat..."):
+        with st.spinner("Processing chat..."):
             df = load_chat(file_path)
             df = df[df["message"].apply(lambda x: isinstance(x, str) and x.strip() != "")]
 
@@ -554,29 +931,33 @@ else:
         # CHAT OVERVIEW
         # -------------------------------
         st.markdown(
-            "<div class='section-header'>📋 Chat Overview</div>",
+            "<div class='section-header'>Chat Overview</div>",
             unsafe_allow_html=True,
         )
         col1, col2 = st.columns([2, 1])
 
         with col1:
-            st.dataframe(df.head(8), use_container_width=True, hide_index=True)
+            st.dataframe(
+                style_table(df.head(8), theme_mode),
+                width="stretch",
+                hide_index=True,
+            )
 
         with col2:
-            st.metric("💬 Messages", len(df))
+            st.metric("Messages", len(df))
             if "sender" in df.columns:
-                st.metric("👥 Participants", df["sender"].nunique())
+                st.metric("Participants", df["sender"].nunique())
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # -------------------------------
         # SPAM ANALYSIS
         # -------------------------------
         st.markdown(
-            "<div class='section-header'>🔍 Spam Analysis</div>",
+            "<div class='section-header'>Spam Analysis</div>",
             unsafe_allow_html=True,
         )
 
-        with st.spinner("🤖 Detecting spam..."):
+        with st.spinner("Detecting spam..."):
             results = predict_chat(file_path)
             results = auto_label(results)
             results["final_prediction"] = results.apply(
@@ -640,17 +1021,17 @@ else:
         col1, col2 = st.columns(2)
 
         with col1:
-            colors = ["#ef4444", "#10b981"]
+            colors = ["#fb7185", "#22c55e"]
             fig_pie = px.pie(
                 values=[spam_msgs, ham_msgs],
-                names=["🚫 Spam", "✅ Ham"],
+                names=["Spam", "Ham"],
                 color_discrete_sequence=colors,
                 hole=0.4,
                 title="<b>Message Distribution</b>",
             )
             fig_pie.update_layout(**plot_layout, height=350, title_x=0.5)
             fig_pie.update_traces(textfont=dict(color=plot_font_color))
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, width="stretch")
 
         with col2:
             if "sender" in results.columns and results["sender"].nunique() > 1:
@@ -670,17 +1051,17 @@ else:
                     y="Sender",
                     orientation="h",
                     title="<b>Spam by Sender</b>",
-                    color_discrete_sequence=["#6366f1"],
+                    color_discrete_sequence=["#2dd4bf"],
                 )
                 fig_bar.update_layout(**plot_layout, height=350, title_x=0.5)
-                st.plotly_chart(fig_bar, use_container_width=True)
+                st.plotly_chart(fig_bar, width="stretch")
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # -------------------------------
         # DETAILED RESULTS TABLE
         # -------------------------------
         st.markdown(
-            "<div class='section-header'>📄 Detailed Results</div>",
+            "<div class='section-header'>Detailed Results</div>",
             unsafe_allow_html=True,
         )
         
@@ -716,34 +1097,24 @@ else:
 
         filtered_results = filtered_results.tail(show_count)
 
-        def color_predictions(val):
-            if val == "Spam":
-                return (
-                    "background-color: rgba(239, 68, 68, 0.12); "
-                    "color: #b91c1c; font-weight: 600;"
-                )
-            else:
-                return (
-                    "background-color: rgba(22, 163, 74, 0.12); "
-                    "color: #166534; font-weight: 600;"
-                )
-
         display_cols = (
             ["sender", "message", "final_prediction"]
             if "sender" in filtered_results.columns
             else ["message", "final_prediction"]
         )
-        styled_df = filtered_results[display_cols].style.applymap(
-            color_predictions, subset=["final_prediction"]
+        styled_df = style_table(
+            filtered_results[display_cols],
+            theme_mode,
+            prediction_col="final_prediction",
         )
-        st.dataframe(styled_df, use_container_width=True, hide_index=True)
+        st.dataframe(styled_df, width="stretch", hide_index=True)
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # -------------------------------
         # WHATSAPP ANALYSIS
         # -------------------------------
         st.markdown(
-            "<div class='section-header'>📊 WhatsApp Analysis</div>",
+            "<div class='section-header'>Chat Analytics</div>",
             unsafe_allow_html=True,
         )
 
@@ -753,11 +1124,11 @@ else:
         total_msgs_ana, participants, active_senders = chat_stats(chat_df)
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("📨 Total Messages", total_msgs_ana)
-            st.metric("👥 Participants", participants)
+            st.metric("Total Messages", total_msgs_ana)
+            st.metric("Participants", participants)
         with col2:
             st.markdown(
-                "<div class='section-header'>📈 Active Senders</div>",
+                "<div class='section-header'>Active Senders</div>",
                 unsafe_allow_html=True,
             )
             active_df = active_senders.reset_index()
@@ -767,27 +1138,27 @@ else:
                 x="Sender",
                 y="Message Count",
                 title="<b>Active Senders</b>",
-                color_discrete_sequence=["#6366f1"],
+                color_discrete_sequence=["#2dd4bf"],
             )
             fig_active.update_layout(**plot_layout, height=350, title_x=0.5)
-            st.plotly_chart(fig_active, use_container_width=True)
+            st.plotly_chart(fig_active, width="stretch")
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # Word Cloud
         wc = generate_wordcloud(chat_df)
         if wc:
             st.markdown(
-                "<div class='section-header'>☁️ Word Cloud</div>",
+                "<div class='section-header'>Word Cloud</div>",
                 unsafe_allow_html=True,
             )
-            st.image(wc.to_array(), caption="Word Cloud", use_container_width=True)
+            st.image(wc.to_array(), caption="Word Cloud", width="stretch")
             st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # Messages over time
         daily_msgs = messages_over_time(chat_df)
         if daily_msgs is not None and not daily_msgs.empty:
             st.markdown(
-                "<div class='section-header'>📅 Messages Over Time</div>",
+                "<div class='section-header'>Messages Over Time</div>",
                 unsafe_allow_html=True,
             )
 
@@ -806,21 +1177,21 @@ else:
             )
             fig_time.update_traces(mode="lines+markers")
             fig_time.update_layout(**plot_layout, height=400, title_x=0.5)
-            st.plotly_chart(fig_time, use_container_width=True)
+            st.plotly_chart(fig_time, width="stretch")
 
             show_time_table = st.checkbox(
                 "Show Messages Table", value=False, key="time_table"
             )
 
             if show_time_table:
-                st.dataframe(df_time, use_container_width=True)
+                st.dataframe(style_table(df_time, theme_mode), width="stretch")
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # Average message length
         avg_len = avg_message_length(chat_df)
         if avg_len is not None and not avg_len.empty:
             st.markdown(
-                "<div class='section-header'>✏️ Average Message Length</div>",
+                "<div class='section-header'>Average Message Length</div>",
                 unsafe_allow_html=True,
             )
             if isinstance(avg_len, pd.Series):
@@ -835,22 +1206,22 @@ else:
                 x="Sender",
                 y="Avg Length",
                 title="<b>Average Message Length</b>",
-                color_discrete_sequence=["#0ea5e9"],
+                color_discrete_sequence=["#38bdf8"],
             )
             fig_avg.update_layout(**plot_layout, height=400, title_x=0.5)
-            st.plotly_chart(fig_avg, use_container_width=True)
+            st.plotly_chart(fig_avg, width="stretch")
 
             show_avg_table = st.checkbox(
                 "Show Avg Length Table", value=False, key="avglen_table"
             )
 
             if show_avg_table:
-                st.dataframe(avg_df, use_container_width=True)
+                st.dataframe(style_table(avg_df, theme_mode), width="stretch")
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # Top words
         st.markdown(
-            "<div class='section-header'>📝 Top Words</div>",
+            "<div class='section-header'>Top Words</div>",
             unsafe_allow_html=True,
         )
         show_count_words = st.radio(
@@ -869,7 +1240,7 @@ else:
             orientation="h",
             text="Count",
             color="Count",
-            color_continuous_scale="Blues",
+            color_continuous_scale=["#14532d", "#2dd4bf"],
             title="<b>Top Words</b>",
         )
         fig_words.update_layout(**plot_layout, height=400, title_x=0.5, showlegend=False)
@@ -890,32 +1261,38 @@ else:
             )
         )
 
-        st.plotly_chart(fig_words, use_container_width=True)
+        st.plotly_chart(fig_words, width="stretch")
 
         show_words_table = st.checkbox(
             "Show Top Words Table", value=False, key="words_table"
         )
 
         if show_words_table:
-            st.dataframe(top_words_df, use_container_width=True)
+            st.dataframe(style_table(top_words_df, theme_mode), width="stretch")
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # Emoji usage
         emoji_counts = emoji_usage(chat_df)
         if emoji_counts:
             st.markdown(
-                "<div class='section-header'>😀 Top Emojis</div>",
+                "<div class='section-header'>Top Emojis</div>",
                 unsafe_allow_html=True,
             )
-            for e, count in emoji_counts:
-                st.write(f"{e} : {count}")
+            emoji_df_preview = pd.DataFrame(
+                emoji_counts, columns=["Emoji", "Count"]
+            )
+            st.dataframe(
+                style_table(emoji_df_preview, theme_mode),
+                width="stretch",
+                hide_index=True,
+            )
         st.markdown("<hr class='section-separator'>", unsafe_allow_html=True)
 
         # -------------------------------
         # EXPORT
         # -------------------------------
         st.markdown(
-            "<div class='section-header'>📥 Export Results</div>",
+            "<div class='section-header'>Export Results</div>",
             unsafe_allow_html=True,
         )
 
@@ -991,32 +1368,35 @@ else:
         col1, col2 = st.columns(2)
         with col1:
             st.download_button(
-                label="📊 Predictions CSV",
+                label="Download predictions CSV",
                 data=full_csv,
                 file_name=full_csv_name,
                 mime="text/csv",
             )
         with col2:
             st.download_button(
-                label="📈 Analysis CSV",
+                label="Download analysis CSV",
                 data=analysis_csv,
                 file_name=analysis_csv_name,
                 mime="text/csv",
             )
 
         st.markdown(
-            '<div class="custom-alert alert-success">✅ Analysis completed successfully!</div>',
+            '<div class="custom-alert alert-success">Analysis completed successfully.</div>',
             unsafe_allow_html=True,
         )
 
     except Exception as e:
-        st.error(f"❌ Processing error: {str(e)}")
+        st.error(f"Processing error: {str(e)}")
+    finally:
+        if temp_file_path and os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
 # Footer
 st.markdown(
     """
 <div class="footer">
-    Built with Streamlit • Powered by Machine Learning
+    Built with Streamlit | Powered by machine learning
 </div>
 """,
     unsafe_allow_html=True,

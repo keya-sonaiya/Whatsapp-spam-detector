@@ -1,8 +1,8 @@
 # WhatsApp Spam Detector
 
-A machine learning–powered web application built with **Streamlit** that identifies spam messages from exported WhatsApp chats.
+A machine learning powered web application built with **Streamlit** that identifies spam messages from exported WhatsApp chats.
 
-This platform uses a combination of **Natural Language Processing (NLP)**, **heuristic auto-labeling**, and a **Multinomial Naive Bayes** classifier to categorize messages as spam or ham. Additionally, it provides interactive, data-rich insights into your WhatsApp conversation—such as message trends, sender activity, top emojis, and word clouds—all wrapped in a clean, interactive GUI.
+This platform uses a combination of **Natural Language Processing (NLP)**, **heuristic auto-labeling**, and a **Multinomial Naive Bayes** classifier to categorize messages as spam or ham. It also provides interactive, data-rich insights into your WhatsApp conversation, including message trends, sender activity, top emojis, and word clouds.
 
 ---
 
@@ -110,6 +110,12 @@ To use the tool, you need to provide a `.txt` file of your chat.
 2. Tap the contact or group name at the top → **Export Chat**.
 3. Choose **"Without Media"**.
 4. Save the generated `.txt` file.
+
+---
+
+## Local Chat Files
+
+Files like `data/temp_chat.txt` are ignored because they may contain private messages. If you want to test `src/predict.py` directly, create `data/temp_chat.txt` locally.
 
 ---
 

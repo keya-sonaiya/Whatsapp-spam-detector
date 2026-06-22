@@ -72,7 +72,7 @@ cd Whatsapp-spam-detector
 ### 2. Create a Virtual Environment (Recommended)
 ```bash
 python -m venv venv
-source venv/Scripts/activate  # On Windows
+.\venv\Scripts\Activate.ps1  # On Windows PowerShell
 # On macOS/Linux use: source venv/bin/activate
 ```
 
@@ -123,8 +123,7 @@ Whatsapp-spam-detector/
 ├── README.md                  # Project documentation
 │
 ├── data/
-│   ├── spam.csv               # Dataset used for training the ML Model
-│   └── temp_chat.txt          # Temporary uploaded chat storage
+│   └── spam.csv               # Dataset used for training the ML Model
 │
 ├── models/
 │   ├── spam_model.pkl         # Pickled MultinomialNB model

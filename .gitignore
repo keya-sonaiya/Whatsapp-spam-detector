@@ -26,3 +26,7 @@ build/
 # Streamlit cache
 .streamlit/
 
+# Local WhatsApp chat exports / temporary files
+temp_chat.txt
+data/temp_chat.txt
+
